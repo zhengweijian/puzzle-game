@@ -20,7 +20,7 @@ module.exports = {
 			{
 				test: /\.js$/,
 				loader: 'babel',
-				exclude: /node_modules|vue\/dist|vue-router\/|vue-loader\/|vue-hot-reload-api\//
+				exclude: /node_modules/
 			},
 			{
 				test: /\.(png|jpg|gif|svg)$/,
@@ -34,7 +34,7 @@ module.exports = {
 				loader: 'style-loader!css-loader?sourceMap'
 			},
 			{
-				test: /\.(woff|svg|eot|ttf)\??.*$/,
+				test: /\.(woff2?|svg|eot|ttf)\??.*$/,
 				loader: 'url-loader?limit=50000&name=[path][name].[ext]'
 			}
 		]

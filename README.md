@@ -20,6 +20,7 @@ For detailed explanation on how things work, consult the [docs for vue-loader](h
 ## 介绍
 一款基于vue.js的拼图小游戏
 
+vue + vue-router + vuex + webpack + vue-loader
 1、计时功能
 2、排行榜
 3、背景图
