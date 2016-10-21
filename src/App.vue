@@ -30,7 +30,7 @@
 					</tr>
 				</thead>
 				<tbody>
-					<tr v-for="(record,index) in recordsOrder">
+					<tr v-for="(record,index) in records">
 						<td>{{index+1}}</td>
 						<td>{{record.name}}</td>
 						<td>{{record.elapsedTime | fm('mm分ss秒')}}</td>
@@ -81,18 +81,18 @@ export default{
 			type : 1,
 			pass : false,
 			records : [],
+			recordsOrder : [],
 			STORE_KEY :'RECORDS'
 		}
 	},
 	components:{
 		'Timer' : Timer
 	},
+	watch:{
+
+	},
 	computed:{
-		recordsOrder : function () {
-			return this.records.sort(function (a, b) {
-				return a.elapsedTime - b.elapsedTime;
-			}).slice(0, 5);
-		}
+
 	},
 	methods:{
 		//随机渲染
@@ -175,6 +175,9 @@ export default{
 	},
 	mounted(){
 		this.records = Store.get(this.STORE_KEY) || [];
+		this.records.sort(function (a, b) {
+			return a.elapsedTime - b.elapsedTime;
+		}).slice(0, 5);
 		this.render();
 	}
 }

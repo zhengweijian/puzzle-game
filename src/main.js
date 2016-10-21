@@ -6,7 +6,7 @@ Vue.filter('fm',function (timestamp, format) {
 	var result;
 
 	timestamp = parseInt(timestamp);
-	console.log(timestamp,format);
+	//console.log(timestamp,format);
 
 	if (!timestamp){
 		result = '-';
