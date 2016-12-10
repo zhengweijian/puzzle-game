@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import App from './App.vue'
 import moment from 'moment';
+import 'normalize.css'
 
 Vue.filter('fm',function (timestamp, format) {
 	var result;

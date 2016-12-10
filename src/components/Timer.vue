@@ -4,10 +4,10 @@
  * @author dimhat
  */
 <template>
-    <div>
-        <span v-if="hours!=0">{{hours}}小时</span>
-        <span v-if="minutes!=0">{{minutes}}分钟</span>
-        <span>{{seconds}}秒</span>
+    <div class="timer">
+        <span v-if="hours!=0" class="timer-hours">{{hours}}小时</span>
+        <span v-if="minutes!=0" class="timer-minutes">{{minutes}}分钟</span>
+        <span class="timer-seconds">{{seconds}}秒</span>
         <br>
         <template v-if="admin">
             <button @click="stop">停止计时</button>
@@ -71,5 +71,17 @@ export default{
 </script>
 
 <style>
-
+    /*time*/
+    .timer{
+        display: inline-block;
+    }
+    .timer-seconds{
+        color:lawngreen;
+    }
+    .timer-minutes{
+        color: cyan;
+    }
+    .timer-hours{
+        color:lightcoral;
+    }
 </style>
