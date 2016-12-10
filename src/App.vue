@@ -14,7 +14,7 @@
 		</ol>
 		<div>
 			<p v-if="type==1">
-				<img src="/src/assets/img/katong/katong_all.jpg" alt="" width="200px" height="200px">
+				<img src="src/assets/img/katong/katong_all.jpg" alt="" width="200px" height="200px">
 			</p>
 		</div>
 		<div>
@@ -55,7 +55,7 @@
 				</template>
 				<!--图片样式-->
 				<template v-if="type==1">
-					<img width="100px" height="100px" :src="puzzle.image" />
+					<img width="80px" height="80px" :src="puzzle.image" />
 				</template>
 			</li>
 		</ul>
@@ -71,6 +71,7 @@
 <script>
 import Timer from './components/Timer.vue';
 import Store from './store';
+import Lib from './lib';
 
 export default{
 	data(){
@@ -81,7 +82,6 @@ export default{
 			type : 1,
 			pass : false,
 			records : [],
-			recordsOrder : [],
 			STORE_KEY :'RECORDS'
 		}
 	},
@@ -97,18 +97,20 @@ export default{
 	methods:{
 		//随机渲染
 		render: function () {
+			this.loading=true;//loading
+
 			let puzzleArr = [];
 			for(var i=1;i<16;i++){
-				puzzleArr.push({idx:i,image:'/src/assets/img/katong/katong_'+i+'.jpg'});
+				puzzleArr.push({idx:i,image:'src/assets/img/katong/katong_'+i+'.jpg'});
 			}
 
-			//shuffle fixme 存在无法完成可能性
-			var len = puzzleArr.length;
-			for(var i=len;i>1;i--){
-				var t = Math.round(Math.random()*(i-1));
-				[puzzleArr[i-1],puzzleArr[t]] = [puzzleArr[t],puzzleArr[i-1]]
-			}
-			console.log(puzzleArr);
+			let invalid = true;//无法通关
+			do{
+				Lib.shuffle(puzzleArr);//shuffle
+				let ret = Lib.revNum(puzzleArr,'idx');
+				invalid = ret%2;//奇数 无效 无法通关
+				console.log('revnum',ret,' -- invalid : ',invalid);
+			}while(invalid);
 
 			puzzleArr.push('');
 			this.puzzles = puzzleArr;
@@ -116,6 +118,9 @@ export default{
 			this.beginTime = new Date().getTime();
 
 			this.passJudge();
+
+			this.loading=false;
+			this.pass=false;
 		},
 		//点击方块移动
 		moveFn:function (index) {
@@ -130,16 +135,14 @@ export default{
 			}
 		},
 		move:function (index, moveTo) {
-			let puzzleArr = [ ].concat(this.puzzles);//$set无法使用，只能拷贝新数组
-
+			let puzzleArr = this.puzzles;//$set无法使用，用splice替代
 			if(moveTo>=0 && moveTo<puzzleArr.length && puzzleArr[moveTo]===''){
-				console.log('success move ',index,'->',moveTo,);
 				this.loading = true;
-				puzzleArr[moveTo] = this.puzzles[index];
-				puzzleArr[index] = '';
-				this.puzzles = puzzleArr;//refresh ui
+				puzzleArr.splice(moveTo,1,puzzleArr[index]);
+				puzzleArr.splice(index,1,'');
 				this.passJudge();//judge pass
 				this.loading = false;
+				console.log('success move ',index,'->',moveTo,);
 			}
 		},
 		//通关判断
@@ -174,10 +177,12 @@ export default{
 		}
 	},
 	mounted(){
+		//历史成绩
 		this.records = Store.get(this.STORE_KEY) || [];
 		this.records.sort(function (a, b) {
 			return a.elapsedTime - b.elapsedTime;
 		}).slice(0, 5);
+		//初始化界面
 		this.render();
 	}
 }
@@ -199,8 +204,8 @@ export default{
 	}
 
 	.puzzle-wrap{
-		width: 408px;
-		height: 408px;
+		width: 328px;
+		height: 328px;
 		margin-bottom: 40px;
 		padding: 0;
 		background: #ccc;
@@ -209,8 +214,8 @@ export default{
 
 	.puzzle {
 		float: left;
-		width: 100px;
-		height: 100px;
+		width: 80px;
+		height: 80px;
 		font-size: 20px;
 		background: #f90;
 		text-align: center;
