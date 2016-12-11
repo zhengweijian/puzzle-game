@@ -21,6 +21,8 @@ npm run build
 
 使用技术：vue + vue-router + webpack
 
+[Live Demo](https://zhengweijian.github.io/puzzle-game/)
+
 
 ## 拼图技巧
 对于2*2的拼图，只要顺着同一个方向转就能完成。
