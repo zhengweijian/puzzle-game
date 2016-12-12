@@ -58,8 +58,8 @@
 		padding: 0;
 		background: #ccc;
 		list-style: none;
-		max-width:600px;
-		max-height:600px;
+		max-width:500px;
+		max-height:500px;
 	}
 	/* li */
 	.puzzle {
@@ -76,7 +76,7 @@
 		text-align: center;
 		border: 1px solid #ccc;
 	}
-	.number{
+	.puzzle-number{
 		font-size: 20px;
 		position: absolute;
 		top:50%;
@@ -86,10 +86,18 @@
 		height:30px;
 		margin-top:-15px;
 	}
+	.puzzle-img{
+		background-size : 400% 400%;
+		background-repeat: no-repeat;
+	}
+
 	.puzzle-empty {
 		background: #ccc;
 		box-shadow: inset 2px 2px 18px;
 		background-image:none!important;
+	}
+	.puzzle-empty .puzzle-number{
+		display: none;
 	}
 
 	.puzzle-history table{
@@ -99,11 +107,7 @@
 
 	}
 
-	.haimian{
-		background: url('assets/img/katong_all.jpg');
-		background-size : 400% 400%;
-		background-repeat: no-repeat;
-	}
+
 </style>
 
 <template>
@@ -122,7 +126,7 @@
 		</ol>
 		<div>
 			<p v-if="type==1">
-				<img src="src/assets/img/katong_all.jpg" alt="" width="200px" height="200px">
+				<img :src="img" alt="" width="200px" height="200px">
 			</p>
 		</div>
 	</div>
@@ -136,19 +140,19 @@
 			<ul class="puzzle-wrap" id="puzzle-warp">
 				<!--数字样式-->
 				<template v-if="type==0">
-					<li class="puzzle number-box" :class="{'puzzle-empty':!puzzle}"
+					<li class="puzzle number-box" :class="{'puzzle-empty':puzzle.last && !pass}"
 					    v-for="(puzzle,index) in puzzles"
 					    @click="moveFn(index)"
 					>
-						<span class="number">{{puzzle.idx}}</span>
+						<span class="puzzle-number">{{puzzle.idx}}</span>
 					</li>
 				</template>
 				<!--图片样式-->
 				<template v-if="type==1">
-					<li class="puzzle haimian" :class="{'puzzle-empty':puzzle.last && !pass}"
+					<li class="puzzle puzzle-img" :class="{'puzzle-empty':puzzle.last && !pass}"
 					    v-for="(puzzle,index) in puzzles"
 					    @click="moveFn(index)"
-					    :style="'background-position:'+((puzzle.idx-1)%4)*33.3+'% '+parseInt((puzzle.idx-1)/4)*33.3+'%'"
+					    :style="imgStyle(puzzle.idx)"
 					>
 					</li>
 				</template>
@@ -196,7 +200,8 @@ export default{
 			pass : false,
 			records : [],
 			STORE_KEY :'RECORDS',
-			lastPuzzle : {idx:16,last:true}
+			lastPuzzle : {idx:16,last:true},
+			img : 'http://7xilgj.com1.z0.glb.clouddn.com/haimian.jpg'
 		}
 	},
 	components:{
@@ -214,7 +219,7 @@ export default{
 
 			let invalid = true;//无法通关
 			do{
-				//Lib.shuffle(puzzleArr);//shuffle
+				Lib.shuffle(puzzleArr);//shuffle
 				let ret = Lib.revNum(puzzleArr,'idx');
 				invalid = ret%2;//奇数 无效 无法通关
 			}while(invalid);
@@ -283,6 +288,13 @@ export default{
 		deleteRecord : function (index,record) {
 			this.records.splice(index,1);
 			Store.set(this.STORE_KEY,this.records);
+		},
+		imgStyle: function(idx){
+			idx = idx-1;
+			return {
+				'background-position':(idx%4)*33.3+'% '+parseInt(idx/4)*33.3+'%',
+				'background-image':'url(\''+this.img+'\')'
+			}
 		}
 	},
 	mounted(){

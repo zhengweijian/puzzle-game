@@ -21,8 +21,9 @@ npm run build
 
 使用技术：vue + vue-router + webpack
 
-[Live Demo](https://zhengweijian.github.io/puzzle-game/)
-
+[网页 Live Demo](https://zhengweijian.github.io/puzzle-game/)
+在手机中打开
+![](http://7xilgj.com1.z0.glb.clouddn.com/puzzle-erweima.png)
 
 ## 拼图技巧
 对于2*2的拼图，只要顺着同一个方向转就能完成。
