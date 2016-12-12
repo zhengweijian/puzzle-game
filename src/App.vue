@@ -49,41 +49,47 @@
 
 	}
 	.puzzle-box{
-
+		margin-bottom: 50px;
 	}
 	.puzzle-box .box-title{
 		padding:20px 30px;
 	}
-	.puzzle-box .box-content{
-		width:100%;
-		max-width:500px;
-	}
 	.puzzle-wrap{
 		padding: 0;
-		width:360px;
 		background: #ccc;
 		list-style: none;
+		max-width:600px;
+		max-height:600px;
 	}
 	/* li */
 	.puzzle {
 		float: left;
-		width:90px;
-		height:90px;
+		width:25%;
+		padding-top:25%;
 		box-shadow: 1px 1px 4px;
 		text-shadow: 1px 1px 1px #B9B4B4;
 		cursor: pointer;
+		position: relative;
 	}
-	.puzzle .number{
-		font-size: 20px;
+	.number-box{
 		background: #f90;
 		text-align: center;
-		width:100%;
-		height:100%;
 		border: 1px solid #ccc;
+	}
+	.number{
+		font-size: 20px;
+		position: absolute;
+		top:50%;
+		left:50%;
+		width:40px;
+		margin-left:-20px;
+		height:30px;
+		margin-top:-15px;
 	}
 	.puzzle-empty {
 		background: #ccc;
 		box-shadow: inset 2px 2px 18px;
+		background-image:none!important;
 	}
 
 	.puzzle-history table{
@@ -91,6 +97,12 @@
 	}
 	.puzzle-history h2{
 
+	}
+
+	.haimian{
+		background: url('assets/img/katong_all.jpg');
+		background-size : 400% 400%;
+		background-repeat: no-repeat;
 	}
 </style>
 
@@ -110,7 +122,7 @@
 		</ol>
 		<div>
 			<p v-if="type==1">
-				<img src="src/assets/img/katong/katong_all.jpg" alt="" width="200px" height="200px">
+				<img src="src/assets/img/katong_all.jpg" alt="" width="200px" height="200px">
 			</p>
 		</div>
 	</div>
@@ -122,24 +134,30 @@
 
 		<div class="box-content">
 			<ul class="puzzle-wrap" id="puzzle-warp">
-				<li class="puzzle" :class="{'puzzle-empty':!puzzle}"
-				    v-for="(puzzle,index) in puzzles"
-				    @click="moveFn(index)">
-					<!--数字样式-->
-					<div class="number" v-if="type==0">
-						{{puzzle.idx}}
-					</div>
-					<!--图片样式-->
-					<template v-if="type==1">
-						<img width="100%" height="100%" :src="puzzle.image" />
-					</template>
-				</li>
+				<!--数字样式-->
+				<template v-if="type==0">
+					<li class="puzzle number-box" :class="{'puzzle-empty':!puzzle}"
+					    v-for="(puzzle,index) in puzzles"
+					    @click="moveFn(index)"
+					>
+						<span class="number">{{puzzle.idx}}</span>
+					</li>
+				</template>
+				<!--图片样式-->
+				<template v-if="type==1">
+					<li class="puzzle haimian" :class="{'puzzle-empty':puzzle.last && !pass}"
+					    v-for="(puzzle,index) in puzzles"
+					    @click="moveFn(index)"
+					    :style="'background-position:'+((puzzle.idx-1)%4)*33.3+'% '+parseInt((puzzle.idx-1)/4)*33.3+'%'"
+					>
+					</li>
+				</template>
 			</ul>
 		</div>
 	</div>
 	<div class="puzzle-history col-3">
 		<h2>历史记录</h2>
-		<table>
+		<table v-cloak="">
 			<thead>
 			<tr>
 				<th>排序</th>
@@ -163,7 +181,6 @@
 </div>
 </template>
 
-
 <script>
 import Timer from './components/Timer.vue';
 import Store from './store';
@@ -178,7 +195,8 @@ export default{
 			type : 1,
 			pass : false,
 			records : [],
-			STORE_KEY :'RECORDS'
+			STORE_KEY :'RECORDS',
+			lastPuzzle : {idx:16,last:true}
 		}
 	},
 	components:{
@@ -191,22 +209,21 @@ export default{
 
 			let puzzleArr = [];
 			for(var i=1;i<16;i++){
-				puzzleArr.push({idx:i,image:'src/assets/img/katong/katong_'+i+'.jpg'});
+				puzzleArr.push({idx:i});
 			}
 
 			let invalid = true;//无法通关
 			do{
-				Lib.shuffle(puzzleArr);//shuffle
+				//Lib.shuffle(puzzleArr);//shuffle
 				let ret = Lib.revNum(puzzleArr,'idx');
 				invalid = ret%2;//奇数 无效 无法通关
 			}while(invalid);
 
-			puzzleArr.push('');
+			puzzleArr.push(this.lastPuzzle);
 			this.puzzles = puzzleArr;
+			//console.log(JSON.stringify(this.puzzles));
 			//更改计时器开始时间
 			this.beginTime = new Date().getTime();
-
-			this.passJudge();//天胡？
 
 			this.loading=false;
 			this.pass=false;
@@ -218,6 +235,7 @@ export default{
 				console.log("loading... or passed")
 				return;
 			}
+			//只能移动4个方向
 			let moveTos = [index-4,index+4,index-1,index+1];
 			for(var i=0;i<moveTos.length;i++){
 				this.move(index,moveTos[i]);
@@ -225,37 +243,39 @@ export default{
 		},
 		move:function (index, moveTo) {
 			let puzzleArr = this.puzzles;//$set无法使用，用splice替代
-			if(moveTo>=0 && moveTo<puzzleArr.length && puzzleArr[moveTo]===''){
+			if(moveTo>=0 && moveTo<puzzleArr.length && puzzleArr[moveTo].last){
 				this.loading = true;
 				puzzleArr.splice(moveTo,1,puzzleArr[index]);
-				puzzleArr.splice(index,1,'');
-				this.passJudge();//judge pass
-				this.loading = false;
-				console.log('success move ',index,'->',moveTo,);
+				puzzleArr.splice(index,1,this.lastPuzzle);
+				this.$nextTick(()=>{
+					this.passJudge();//judge pass
+					this.loading = false;
+					//console.log('move success,judge not pass',index,'->',moveTo);
+				})
 			}
 		},
 		//通关判断
 		passJudge : function () {
-			if (this.puzzles[15] === '') {
+			if (this.puzzles[15].last) {
 				const newPuzzles = this.puzzles.slice(0, 15);//取出每个元素,[0,15)
-				const isPass = newPuzzles.every((e, i) => e.idx === i + 1);
+				const isPass = newPuzzles.every((e, i)=>e.idx === i + 1);
 				if (isPass) {
 					var now = new Date().getTime();
 					var completedTime =  now - this.beginTime;
 
 					this.pass = true;
-
-					var name= prompt('恭喜，闯关成功！请输入名字','Bill Gates');
-					if(name){
-						//保存记录
-						this.records.push({
-							name : name,
-							elapsedTime : completedTime,
-							completedTime : now
-						});
-						Store.set(this.STORE_KEY,this.records);
-					}
-
+					this.$nextTick(()=>{
+						var name= prompt('恭喜，闯关成功！请输入名字','Bill Gates');
+						if(name){
+							//保存记录
+							this.records.push({
+								name : name,
+								elapsedTime : completedTime,
+								completedTime : now
+							});
+							Store.set(this.STORE_KEY,this.records);
+						}
+					});
 				}
 			}
 		},
